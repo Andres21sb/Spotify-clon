@@ -7,7 +7,8 @@ export async function GET ({params, request}){
     const id = urlObject.searchParams.get('id');
 
     const playlist = allPlaylists.find((playlist) => playlist.id === id);
-    const songs = allSongs.filter((song) => song.playlistId === id);
+    const songs = allSongs.filter((song) => song.albumId == id);
+
 
     return new Response(JSON.stringify({playlist, songs}), {
         headers: {

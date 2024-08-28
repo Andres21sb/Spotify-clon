@@ -16,8 +16,8 @@ export function CardPlayButton({ id }) {
       .then((res) => res.json())
       .then((data) => {
         const { songs, playlist } = data;
+        setCurrentMusic({ playlist, songs, song: songs[0] });
         setIsPlaying(true);
-        setCurrentMusic({ songs, playlist, song: songs[0] });
       });
   };
 
