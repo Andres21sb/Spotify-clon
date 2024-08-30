@@ -27,6 +27,31 @@ export const Play = ({ className }) => (
   </svg>
 );
 
+export const Next = ({ className }) => (
+  <svg
+    data-encore-id="icon"
+    role="img"
+    aria-hidden="true"
+    viewBox="0 0 16 16"
+
+    className={className}
+  >
+    <path d="M12.7 1a.7.7 0 0 0-.7.7v5.15L2.05 1.107A.7.7 0 0 0 1 1.712v12.575a.7.7 0 0 0 1.05.607L12 9.149V14.3a.7.7 0 0 0 .7.7h1.6a.7.7 0 0 0 .7-.7V1.7a.7.7 0 0 0-.7-.7h-1.6z"></path>
+  </svg>
+);
+
+export const Previous = ({ className }) => (
+  <svg
+    data-encore-id="icon"
+    role="img"
+    aria-hidden="true"
+    viewBox="0 0 16 16"
+    className={className}
+  >
+    <path d="M3.3 1a.7.7 0 0 1 .7.7v5.15l9.95-5.744a.7.7 0 0 1 1.05.606v12.575a.7.7 0 0 1-1.05.607L4 9.149V14.3a.7.7 0 0 1-.7.7H1.7a.7.7 0 0 1-.7-.7V1.7a.7.7 0 0 1 .7-.7h1.6z"></path>
+  </svg>
+);
+
 // Volumes svgs
 export const VolumeMute = ({ className }) => (
   <svg
@@ -170,13 +195,13 @@ const SongControl = ({ audio }) => {
     return () => {
       audio.current.removeEventListener("timeupdate", handleTimeUpdate);
     };
-  },[]);
+  }, []);
 
   const handleTimeUpdate = () => {
     setCurrentTime(audio.current.currentTime);
   };
 
-  const duration = audio?.current?.duration??0;
+  const duration = audio?.current?.duration ?? 0;
 
   const formatTime = (time) => {
     if (isNaN(time)) {
@@ -189,7 +214,9 @@ const SongControl = ({ audio }) => {
 
   return (
     <div className="flex gap-x-3 text-xs pt-2">
-      <span className="opacity-50 w-12 text-right">{formatTime(currentTime)}</span>
+      <span className="opacity-50 w-12 text-right">
+        {formatTime(currentTime)}
+      </span>
       <Slider
         defaultValue={[0]}
         value={[currentTime]} //122s -> 2:02
@@ -207,11 +234,13 @@ const SongControl = ({ audio }) => {
 };
 
 export function Player() {
-  const { currentMusic, isPlaying, setIsPlaying, volume } = usePlayerStore(
+  const { currentMusic, setCurrentMusic, isPlaying, setIsPlaying, volume } = usePlayerStore(
     (state) => state
   );
   const [currentSong, setCurrentSong] = useState(null);
   const audioRef = useRef();
+
+  const { playlist } = currentMusic;
 
   useEffect(() => {
     isPlaying ? audioRef.current.play() : audioRef.current.pause();
@@ -231,9 +260,58 @@ export function Player() {
     }
   }, [currentMusic]);
 
+  //useEffect for the queue of songs in currentMusic dictionary everytime playlist changes
+  useEffect(() => {
+    //if no playlist, return
+    if (!playlist) return;
+    const {song} = currentMusic;
+    fetch(`/api/get-songs-by-playlist-id.json?id=${playlist?.id}`)
+    .then((res) => res.json())
+    .then((data) => {
+      const { songs } = data;
+      //filter songs with index greater than current song
+      const filteredSongs = songs.filter((s) => s.id >= song.id);
+      setCurrentMusic({ ...currentMusic, songs: filteredSongs });
+    });
+  }, [playlist]);
+
   //play/pause handle
   const handleClick = () => {
     setIsPlaying(!isPlaying);
+  };
+
+  //next song handle
+  const handleNext = () => {
+    const { song, playlist, songs } = currentMusic;
+    // if no song, return
+    if (!song) return;
+    //find index of current song
+    const currentIndex = songs.findIndex((s) => s.id === song.id);
+    //last index exception
+    if (currentIndex === songs.length - 1) {
+      setCurrentMusic({ ...currentMusic, song: songs[0] });
+      return;
+    }
+    //next index
+    const nextIndex = (currentIndex + 1) ;
+    setCurrentMusic({ ...currentMusic, song: songs[nextIndex] });
+  };
+
+  //previous
+  const handlePrevious = () => {
+    const { song, playlist, songs } = currentMusic;
+    // if no song, return
+    if (!song) return;
+    //find index of current song
+    const currentIndex = songs.findIndex((s) => s.id === song.id);
+    //first index exception
+    if (currentIndex === 0) {
+      setCurrentMusic({ ...currentMusic, song: songs[songs.length - 1] });
+      return;
+    }
+    //previous index
+    const previousIndex = (currentIndex - 1) ;
+    setCurrentMusic({ ...currentMusic, song: songs[previousIndex] });
   };
 
   return (
@@ -243,9 +321,19 @@ export function Player() {
       </div>
       <div className="grid place-content-center gap-4 flex-1 ">
         <div className="flex justify-center flex-col items-center">
+          <div className='flex flex-row gap-2'>
+          <button title="Previous song" onClick={handlePrevious}>
+            <Previous className='w-4 h-4 fill-zinc-400 hover:fill-white transition duration-300
+            hover:scale-105'/>
+          </button>
           <button className="bg-white rounded-full p-2" onClick={handleClick}>
             {isPlaying ? <Pause /> : <Play />}
           </button>
+          <button title="Next song" onClick={handleNext}>
+            <Next className='w-4 h-4 fill-zinc-400 hover:fill-white transition duration-300
+            hover:scale-105'/>
+          </button>
+          </div>
           <SongControl audio={audioRef} />
           <audio ref={audioRef} />
         </div>
