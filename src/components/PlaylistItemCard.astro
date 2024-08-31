@@ -2,7 +2,6 @@
 import type { Playlist } from "@/lib/data";
 import { CardPlayButton } from "@/components/CardPlayButton";
 
-
 interface Props {
   playlist: Playlist;
 }
@@ -12,20 +11,22 @@ const { id, cover, title, artists, color } = playlist;
 const artistsString = artists.join(", ");
 ---
 
-<article class="group relative hover:bg-zinc-800 shadow-lg hover:shadow-xl bg-zinc-500/30 rounded-md
-transition-all duration-300">
+<article
+  class="group relative hover:bg-zinc-800 shadow-lg hover:shadow-xl bg-zinc-500/30 rounded-md
+transition-all duration-300"
+>
   <div
-  class="absolute right-4 bottom-20 translate-y-4
+    class="absolute right-4 bottom-20 translate-y-4
   transitio-all duration-500 opacity-0
   group-hover:translate-y-0 group-hover:opacity-100
   z-10"
   >
-  <CardPlayButton id={id} client:visible/>
+    <CardPlayButton id={id} client:visible />
   </div>
   <a
     href={`/playlist/${id}`}
     class="playlist-item transition-all duration-300 flex relative p-2 overflow-hidden items-center
-   gap-2 pb-4 rounded-md w-44 flex-col"
+   gap-2 pb-4 rounded-md w-24 md:w-44 flex-col"
     transition:name=`playlist ${id} box`
   >
     <picture class="aspect-square h-auto w-full flex-none">
@@ -36,16 +37,38 @@ transition-all duration-300">
         transition:name={`playlist ${id} image`}
       />
     </picture>
-    <div class="flex flex-auto flex-col truncate px-2">
-      <h4 class="font-semibold text-sm" transition:name=`playlist ${id} title`>
-        {title}
+    <div class="flex flex-auto flex-col md:truncate px-2">
+      <h4 class="font-semibold text-xs" transition:name=`playlist ${id} title`>
+        <span class="">{title}</span>
       </h4>
       <span
         class="text-xs text-gray-400"
         transition:name=`playlist ${id} artists`
       >
-        {artistsString}
+      <span class="">{artistsString}</span>
       </span>
     </div>
   </a>
 </article>
+<style>
+  @keyframes marquee {
+    0% {
+      transform: translateX(100%);
+    }
+    100% {
+      transform: translateX(-100%);
+    }
+  }
+
+  .marquee {
+    overflow: hidden;
+    white-space: nowrap;
+    display: block;
+  }
+
+  .marquee-content {
+    display: inline-block;
+    padding-left: 100%;
+    animation: marquee 10s linear infinite;
+  }
+</style>

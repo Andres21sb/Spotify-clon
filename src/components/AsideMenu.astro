@@ -13,11 +13,11 @@ import { playlists } from "@/lib/data";
     <ul>
       <SideMenuItem href="/">
         <Home />
-        Home
+        <span class="hidden md:block">Home</span>
       </SideMenuItem>
       <SideMenuItem href="/#">
         <Search />
-        Search
+        <span class="hidden md:block">Home</span>
       </SideMenuItem>
     </ul>
   </div>
@@ -25,7 +25,7 @@ import { playlists } from "@/lib/data";
     <ul>
       <SideMenuItem href="/#">
         <Library />
-        Library
+        <span class="hidden md:block">Library</span>
       </SideMenuItem>
 
       {
